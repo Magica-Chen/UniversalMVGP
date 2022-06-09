@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import linalg as tfl
 from tensorflow import math as tfm
-from tensorflow_probability import distributions as tfd
+from tensorflow_probability import math as tfm
 
 
 def _merge_and_separate(a, b, func):
@@ -124,7 +124,8 @@ def broadcast(tensor, tensor_with_target_shape):
     else:
         # the shapes are not fully specified. we have to work with tensors
         target_shape = tf.shape(input=tensor_with_target_shape)
-        expand_dims_shape = tf.concat([[1] * (target_rank - input_rank), tf.shape(input=tensor)], axis=0)
+        expand_dims_shape = tf.concat([[1] * (target_rank - input_rank), tf.shape(input=tensor)],
+                                      axis=0)
         tile_multiples = tf.concat([target_shape[0:-input_rank], [1] * input_rank], axis=0)
     input_with_expanded_dims = tf.reshape(tensor, expand_dims_shape)
     return tf.tile(input_with_expanded_dims, tile_multiples)
@@ -172,4 +173,20 @@ def vec_to_tri(vectors):
     tensor where the lower triangle of each matrix_size x matrix_size matrix
     is constructed by unpacking each M-vector.
     """
-    return tfd.fill_triangular(vectors)
+    return tfm.fill_triangular(vectors)
+
+
+def matrix_diag_transform(matrix, transform=None):
+    """
+    Transform diagonal of [batch-]matrix, leave rest of matrix unchanged.
+    Create a trainable covariance defined by a Cholesky factor:
+    """
+    if transform is None:
+        return matrix
+    else:
+        # Replace the diag with transformed diag.
+        diag = tfl.diag_part(matrix)
+        transformed_diag = transform(diag)
+        transformed_mat = tfl.set_diag(matrix, transformed_diag)
+        return transformed_mat
+

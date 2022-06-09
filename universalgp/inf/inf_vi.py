@@ -86,7 +86,7 @@ class Store(VariableStore):
             # Use vec_to_tri(raw_covars) so as to only optimize over the lower triangular portion.
             # We note that we will always operate over the cholesky space internally.
             triangle = util.vec_to_tri(self.raw_covars)
-            chol_covars = tfd.matrix_diag_transform(triangle, transform=tf.nn.softplus)
+            chol_covars = util.matrix_diag_transform(triangle, transform=tf.nn.softplus)
         return weights, chol_covars, self.means, self.inducing_inputs
 
 
@@ -360,7 +360,7 @@ class Variational(Inference):
             kern_prods[i] = tf.transpose(a=tfl.cholesky_solve(kernel_chol[i, :, :], ind_train_kern))
             # We only need the diagonal components.
             kern_sums[i] = (self.cov[i].diag_cov_func(train_inputs) -
-                            util.mul_sum(kern_prods[i], tfl.transpose(ind_train_kern)))
+                            util.mul_sum(kern_prods[i], tfl.matrix_transpose(ind_train_kern)))
 
         kern_prods = tf.stack(kern_prods, 0)
         kern_sums = tf.stack(kern_sums, 0)
@@ -382,7 +382,7 @@ class Variational(Inference):
         batch_size = tf.shape(input=sample_means)[-2]
         norms = tf.random.normal([self.args['num_components'], self.args['num_samples'],
                                   batch_size, self.num_latents])
-        return (sample_means[:, tf.newaxis, ...] + tf.sqrt(sample_vars)[:, tf.newaxis, ...] * norms)
+        return sample_means[:, tf.newaxis, ...] + tf.sqrt(sample_vars)[:, tf.newaxis, ...] * norms
 
     def _build_sample_info(self, kern_prods, kern_sums, means, chol_covars):
         """Get means and variances of a distribution
@@ -403,5 +403,6 @@ class Variational(Inference):
             quad_form = util.mul_sum(util.matmul_br(kern_prods, full_covar), kern_prods)
         # shape: (num_components, num_latents, batch_size,1)
         sample_means = util.matmul_br(kern_prods, means[..., tf.newaxis])
-        sample_vars = tfl.transpose(kern_sums + quad_form)  # (num_components, x, num_latents)
-        return tfl.transpose(tf.squeeze(sample_means, -1)), sample_vars
+        sample_vars = tfl.matrix_transpose(kern_sums + quad_form)  # (num_components, x,
+        # num_latents)
+        return tfl.matrix_transpose(tf.squeeze(sample_means, -1)), sample_vars

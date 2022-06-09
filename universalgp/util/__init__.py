@@ -7,6 +7,7 @@ from .dist import sq_dist
 from .dist import manhatten_dist
 from .dist import euclidean_dist
 
+from .util import matrix_diag_transform
 from .util import tri_vec_shape
 from .util import vec_to_tri
 from .util import ceil_divide
