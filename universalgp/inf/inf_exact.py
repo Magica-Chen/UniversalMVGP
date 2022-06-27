@@ -16,12 +16,13 @@ JITTER = 1e-2
 
 class Store(VariableStore):
     """Stores the variables for the exact inference"""
+
     def build(self, input_shape):
         input_dim = int(input_shape[1])
-        self.train_inputs = self.add_variable('train_inputs', [self.num_train, input_dim],
-                                              trainable=False)
-        self.train_outputs = self.add_variable('train_outputs', [self.num_train, self.output_dim],
-                                               trainable=False)
+        self.train_inputs = self.add_weight('train_inputs', [self.num_train, input_dim],
+                                            trainable=False)
+        self.train_outputs = self.add_weight('train_outputs', [self.num_train, self.output_dim],
+                                             trainable=False)
         super().build(input_shape)
 
     def call(self, inputs):
@@ -30,6 +31,7 @@ class Store(VariableStore):
 
 class Exact(Inference):
     """Class for exact inference."""
+
     def __init__(self, args, lik_name, output_dim, num_train, inducing_inputs):
         super().__init__(args, num_train)
         self.store = Store(args, output_dim, num_train, inducing_inputs)
@@ -101,7 +103,6 @@ class Exact(Inference):
 
     @staticmethod
     def _build_log_marginal_likelihood(train_outputs, chol, alpha):
-
         # contract the batch dimension, quad_form (num_latent,)
         quad_form = tf.matmul(train_outputs, alpha, transpose_a=True)
         log_trace = util.log_cholesky_det(chol)

@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import linalg as tfl
 from tensorflow import math as tfm
-from tensorflow_probability import math as tfm
+from tensorflow_probability import math as tpm
 
 
 def _merge_and_separate(a, b, func):
@@ -173,7 +173,7 @@ def vec_to_tri(vectors):
     tensor where the lower triangle of each matrix_size x matrix_size matrix
     is constructed by unpacking each M-vector.
     """
-    return tfm.fill_triangular(vectors)
+    return tpm.fill_triangular(vectors)
 
 
 def matrix_diag_transform(matrix, transform=None):
