@@ -93,7 +93,7 @@ def predict(test_inputs, saved_model, dataset_info, args):
 
     gp = util.construct_from_flags(args, dataset_info, dataset_info.inducing_inputs.shape[0])
     checkpoint = tf.train.Checkpoint(gp=gp)
-    checkpoint.restore(saved_model)
+    checkpoint.restore(saved_model).expect_partial()
 
     test_inputs = np.array_split(test_inputs, num_batches)
     mean, var = [0.0] * num_batches, [0.0] * num_batches
@@ -127,7 +127,7 @@ def train_gp(dataset, args):
 
     # Restore from existing checkpoint
     checkpoint = tf.train.Checkpoint(gp=gp, optimizer=optimizer)
-    checkpoint.restore(tf.train.latest_checkpoint(out_dir))
+    checkpoint.restore(tf.train.latest_checkpoint(out_dir)).expect_partial()
     step_counter = optimizer.iterations
 
     step = 0

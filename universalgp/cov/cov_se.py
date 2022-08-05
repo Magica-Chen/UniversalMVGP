@@ -2,7 +2,6 @@
 Squared exponential kernel
 """
 import tensorflow as tf
-
 from .. import util
 from .base import Covariance
 
@@ -14,6 +13,14 @@ tf.compat.v1.app.flags.DEFINE_boolean(
 
 class SquaredExponential(Covariance):
     """Squared exponential kernel"""
+
+    def __init__(self, args):
+        super().__init__(args)
+        self.sf = None
+        self.length_scale = None
+        self.iso = None
+        self.input_dim = None
+
     def build(self, input_shape):
         self.input_dim = int(input_shape[-1])
         self.iso = self.args['iso']
@@ -22,12 +29,12 @@ class SquaredExponential(Covariance):
         sigma_f = tf.keras.initializers.Constant(self.args['sf']) if (
             'sf' in self.args) else None
         if not self.args['iso']:
-            self.length_scale = self.add_variable("length_scale", [self.input_dim],
-                                                  initializer=length, dtype=tf.float32)
+            self.length_scale = self.add_weight("length_scale", [self.input_dim],
+                                                initializer=length, dtype=tf.float32)
         else:
-            self.length_scale = self.add_variable("length_scale", shape=[], initializer=length,
-                                                  dtype=tf.float32)
-        self.sf = self.add_variable("sf", shape=[], initializer=sigma_f, dtype=tf.float32)
+            self.length_scale = self.add_weight("length_scale", shape=[], initializer=length,
+                                                dtype=tf.float32)
+        self.sf = self.add_weight("sf", shape=[], initializer=sigma_f, dtype=tf.float32)
         super().build(input_shape)
 
     def call(self, point1, point2=None):
@@ -42,8 +49,8 @@ class SquaredExponential(Covariance):
         if point2 is None:
             point2 = point1
 
-        kern = self.sf**2 * tf.exp(-util.sq_dist(point1 / length_scale_br,
-                                                 point2 / length_scale_br) / 2.0)
+        kern = self.sf ** 2 * tf.exp(-util.sq_dist(point1 / length_scale_br,
+                                                   point2 / length_scale_br) / 2.0)
         return kern
 
     def diag_cov_func(self, points):

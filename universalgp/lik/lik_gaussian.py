@@ -5,7 +5,6 @@ Gaussian likelihood function
 import numpy as np
 import tensorflow as tf
 from tensorflow import math as tfm
-
 from .base import Likelihood
 
 tf.compat.v1.app.flags.DEFINE_float('sn', 1.0, 'Initial standard dev for the Gaussian likelihood')
@@ -13,9 +12,14 @@ tf.compat.v1.app.flags.DEFINE_float('sn', 1.0, 'Initial standard dev for the Gau
 
 class LikelihoodGaussian(Likelihood):
     """Gaussian likelihood function """
+
+    def __init__(self, args, **kwargs):
+        super().__init__(args)
+        self.sn = None
+
     def build(self, input_shape):
         init_sn = tf.keras.initializers.Constant(self.args['sn']) if 'sn' in self.args else None
-        self.sn = self.add_variable("std_dev", [], initializer=init_sn, dtype=tf.float32)
+        self.sn = self.add_weight("std_dev", [], initializer=init_sn, dtype=tf.float32)
         super().build(input_shape)
 
     def log_cond_prob(self, y, mu):

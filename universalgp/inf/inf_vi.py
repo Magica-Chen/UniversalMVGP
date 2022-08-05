@@ -24,8 +24,8 @@ tf.compat.v1.app.flags.DEFINE_boolean(
 
 
 class Store(VariableStore):
-    def __init__(self, args, output_dim, num_train, inducing_inputs, **kwargs):
-        super().__init__(args, output_dim, num_train, inducing_inputs, kwargs)
+    def __init__(self, args, output_dim, num_train, inducing_inputs):
+        super().__init__(args, output_dim, num_train, inducing_inputs)
         self.raw_covars = None
         self.means = None
         self.raw_weights = None
@@ -157,7 +157,7 @@ class Variational(Inference):
 
     def prediction(self, test_inputs):
         """Make predictions"""
-        return self.apply(test_inputs['input'])
+        return self.__call__(test_inputs['input'])
 
     def _apply(self, inputs):
         """Construct predictive distribution

@@ -2,7 +2,6 @@
 Simple datasets for testing
 """
 import numpy as np
-
 from .definition import Dataset, select_training_and_test, to_tf_dataset
 
 SEED = 1234

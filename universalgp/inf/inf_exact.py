@@ -17,6 +17,11 @@ JITTER = 1e-2
 class Store(VariableStore):
     """Stores the variables for the exact inference"""
 
+    def __init__(self, args, output_dim, num_train, inducing_inputs):
+        super().__init__(args, output_dim, num_train, inducing_inputs)
+        self.train_outputs = None
+        self.train_inputs = None
+
     def build(self, input_shape):
         input_dim = int(input_shape[1])
         self.train_inputs = self.add_weight('train_inputs', [self.num_train, input_dim],
